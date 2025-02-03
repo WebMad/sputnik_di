@@ -197,3 +197,13 @@ abstract class Lifecycle {
 
 It is used for classes that have a lifecycle. They can be registered in the dependency node via
 the `initializeQueue` getter.
+
+## Contributing and Support
+
+If you have any ideas, feature requests, or issues, feel free to open an issue or submit a pull
+request in the [GitHub repository](https://github.com/WebMad/sputnik_di). Your feedback is highly
+appreciated!
+
+If you like this project and want to support me, you can do so
+via [Boosty](https://boosty.to/gubin-dev/donate). Every contribution helps keep this project alive
+and growing. Thank you! 😊  
