@@ -59,11 +59,13 @@ class DepsNodeBuilder<T extends DepsNode> extends StatelessWidget {
             if (res != null) {
               return res;
             }
+            break;
           case DepsNodeStatus.initializing:
             final res = initializing?.call(context, depsNode);
             if (res != null) {
               return res;
             }
+            break;
           case DepsNodeStatus.initialized:
             return initialized.call(context, depsNode);
           case DepsNodeStatus.disposing:
@@ -71,11 +73,13 @@ class DepsNodeBuilder<T extends DepsNode> extends StatelessWidget {
             if (res != null) {
               return res;
             }
+            break;
           case DepsNodeStatus.disposed:
             final res = disposed?.call(context, depsNode);
             if (res != null) {
               return res;
             }
+            break;
         }
 
         return orElse(context, depsNode);

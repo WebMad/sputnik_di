@@ -1,39 +1,199 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
-
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
-
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+# Lightweight DI for your Dart project
 
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+For a Dart project:
 
-## Usage
+```shell
+dart pub add sputnik_di
+```
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
+Or for a Flutter project:
+
+```shell
+dart pub add flutter_sputnik_di
+```
+
+Everything revolves around `DepsNode` (Dependency Node). A Dependency Node is an atomic unit of your
+code. It can serve as both a dependency container for your feature and as a scope for your
+application, such as `AppScopeDepsNode`, `AuthScopeDepsNode`, `OrderScopeDepsNode`, etc.
 
 ```dart
-const like = 'sample';
+import 'package:flutter_sputnik_di/flutter_sputnik_di.dart';
+
+Future<void> main() async {
+  final featureDepsNode = FeatureDepsNode();
+
+  await featureDepsNode.init();
+
+  final featureManager = featureDepsNode.featureManager();
+
+  // using featureManager
+}
+
+/// Dependency Node
+class FeatureDepsNode extends DepsNode {
+  @override
+  @protected
+  List<Set<LifecycleDependency>> initializeQueue = [
+    {
+      featureManager,
+    },
+  ];
+
+  late final featureManager = bind(() => FeatureManager());
+}
+
+class FeatureManager implements Lifecycle {
+  Future<void> init() {
+    // ...
+  }
+
+  Future<void> dispose() {
+    // ...
+  }
+}
+```
+
+All dependencies described in the dependency node must be wrapped in the `bind` method. This method
+creates a callback that, when calling a dependency, checks whether the current dependency node has
+been disposed of. Additionally, it acts as a wrapper for controlling calls in `initializeQueue`.
+This ensures that dependencies are not accessed before the node is initialized.
+
+Of course, this does not completely eliminate the problem of early dependency calls, especially in
+production code where `assert` is used. However, this is a trade-off for ease of use and reducing
+the number of created entities.
+
+## Using with Flutter
+
+```dart
+class FeatureWidget extends StatefulWidget {
+  final Widget child;
+
+  const FeatureWidget({
+    required this.child,
+    super.key
+  });
+
+  @override
+  State<FeatureWidget> createState() => _FeatureWidgetState();
+}
+
+class _FeatureWidgetState extends State<FeatureWidget> {
+  late final FeatureDepsNode featureDepsNode;
+
+  @override
+  void initState() {
+    super.initState();
+
+    featureDepsNode = FeatureDepsNode();
+    unawaited(featureDepsNode.init());
+  }
+
+  @override
+  void dispose() {
+    unawaited(featureDepsNode.dispose());
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DepsNodeBuider(
+      depsNode: featureDepsNode,
+      initialized: (context, depsNode) {
+        final featureManager = depsNode.featureManager();
+
+        // using featureManager
+
+        return DepsNodeBinder(
+          depsNode: featureDepsNode,
+          child: widget.child,
+        );
+      },
+      orElse: (context, depsNode) {
+        return Center(Text('Current depsNode status = ${depsNode.status}'));
+      },
+    );
+  }
+}
+```
+
+## Built-in Simple State Management
+
+We are used to advanced state management systems, but they are not always convenient. In most cases,
+a simpler system is sufficient, and in `sputnik_di`, this model looks as follows:
+
+```dart
+class FeatureStateHolder extends StateHolder<String> {
+  FeatureStateHolder() : super('DefaultValue');
+
+  void updateState(String newState) {
+    state = newState;
+  }
+}
+
+class FeatureManager implements Lifecycle {
+  final FeatureStateHolder _featureStateHolder;
+
+// ...
+}
+
+class FeatureDepsNode extends DepsNode {
+  @override
+  @protected
+  List<Set<LifecycleDependency>> initializeQueue = [];
+
+  @override
+  @protected
+  List<Set<LifecycleDependency>> initializeQueue = [
+    {
+      /// Should be disposed after depsNode is disposed
+      featureStateHolder,
+    },
+    {
+      featureManager,
+    },
+  ];
+
+  late final featureManager = bind(() => FeatureManager());
+
+  late final featureStateHolder = bind(() => FeatureStateHolder());
+}
+
+class FeatureWidget extends StatelessWidget {
+  const FeatureWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final featureDepsNode = context.depsNode<FeatureDepsNode>();
+
+    // rebuild on state change
+    return StateHolderBuilder(
+        holder: featureDepsNode.featureStateHolder,
+        builder: (context, state) {
+          // listen to events from the state holder
+          return StateHolderListener(
+            listener: (data) {},
+            holder: featureDepsNode.featureStateHolder,
+            child: const SizedBox.shrink(),
+          );
+        }
+    );
+  }
+}
 ```
 
 ## Additional information
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+The package includes a `Lifecycle` class, which is structured as follows:
+
+```dart
+abstract class Lifecycle {
+  Future<void> init();
+
+  Future<void> dispose();
+}
+```
+
+It is used for classes that have a lifecycle. They can be registered in the dependency node via
+the `initializeQueue` getter.

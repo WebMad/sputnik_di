@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sputnik_di/flutter_sputnik_di.dart';
 
 class StateHolderListener<T extends StateHolder<R>, R> extends StatefulWidget {
-  final T stateHolder;
+  final T holder;
   final void Function(R data) listener;
   final Widget child;
 
   const StateHolderListener({
     super.key,
-    required this.stateHolder,
+    required this.holder,
     required this.listener,
     required this.child,
   });
@@ -27,7 +27,7 @@ class _StateHolderListenerState<T extends StateHolder<R>, R>
   void initState() {
     super.initState();
 
-    _sub = widget.stateHolder.stream.listen((event) => widget.listener(event));
+    _sub = widget.holder.stream.listen((event) => widget.listener(event));
   }
 
   @override
