@@ -1,7 +1,17 @@
 name: flutter_sputnik_di
-description: Lightweight DI for your Flutter project
+description: 'Lightweight Dependency Injection Framework for your Flutter project'
 version: 0.0.1
 repository: https://github.com/WebMad/sputnik_di/tree/main/packages/flutter_sputnik_di
+
+topics:
+  - dependency-injection
+  - inversion-of-control
+  - ioc
+  - container
+  - utils
+
+funding:
+  - 'https://boosty.to/gubin-dev/donate'
 
 environment:
   sdk: '>=3.4.0 <4.0.0'

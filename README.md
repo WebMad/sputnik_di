@@ -169,12 +169,12 @@ class FeatureWidget extends StatelessWidget {
 
     // rebuild on state change
     return StateHolderBuilder(
-        holder: featureDepsNode.featureStateHolder,
+        holder: featureDepsNode.featureStateHolder(),
         builder: (context, state) {
           // listen to events from the state holder
           return StateHolderListener(
             listener: (data) {},
-            holder: featureDepsNode.featureStateHolder,
+            holder: featureDepsNode.featureStateHolder(),
             child: const SizedBox.shrink(),
           );
         }
