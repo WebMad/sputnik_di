@@ -1,7 +1,7 @@
 name: flutter_sputnik_di
-description: A starting point for Dart libraries or applications.
-version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+description: Lightweight DI for your Flutter project
+version: 0.0.1
+repository: https://github.com/WebMad/sputnik_di/tree/main/packages/flutter_sputnik_di
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -10,10 +10,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # path: ^1.8.0
+
   nested: ^1.0.0
-  sputnik_di:
-    path: ../sputnik_di
+  sputnik_di: ^0.0.1
 
 dev_dependencies:
   lints: ^3.0.0
