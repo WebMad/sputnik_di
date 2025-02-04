@@ -1,6 +1,6 @@
 name: sputnik_di
 description: 'Lightweight Dependency Injection Framework for your Flutter project'
-version: 0.0.2
+version: 0.0.3
 repository: https://github.com/WebMad/sputnik_di/tree/main/packages/sputnik_di
 
 topics:

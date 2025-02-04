@@ -30,8 +30,8 @@ class StateHolderBuilder<Holder extends StateHolder<T>, T>
 
   @override
   Widget build(BuildContext context) => StreamBuilder<T>(
-    initialData: holder.state,
-    stream: holder.stream,
-    builder: (context, snapshot) => builder(context, snapshot.requireData),
-  );
+        initialData: holder.state,
+        stream: holder.stream,
+        builder: (context, snapshot) => builder(context, snapshot.requireData),
+      );
 }
