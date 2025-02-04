@@ -109,7 +109,8 @@ abstract class DepsNode implements Lifecycle {
   /// or during initialization.
   @protected
   R Function() bind<R>(R Function() creator) {
-    final dep = creator();
+    bool isCreated = false;
+    late final R dep;
 
     return () {
       assert(
@@ -119,7 +120,12 @@ abstract class DepsNode implements Lifecycle {
         'is "initialized" or during the initialization of the initializeQueue.',
       );
 
-      return dep;
+      if (isCreated) {
+        return dep;
+      }
+
+      isCreated = true;
+      return dep = creator();
     };
   }
 }
