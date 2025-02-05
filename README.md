@@ -98,7 +98,7 @@ class _FeatureWidgetState extends State<FeatureWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return DepsNodeBuider(
+    return DepsNodeBuilder(
       depsNode: featureDepsNode,
       initialized: (context, depsNode) {
         final featureManager = depsNode.featureManager();
