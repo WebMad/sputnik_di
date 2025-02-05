@@ -1,6 +1,6 @@
 name: flutter_sputnik_di
 description: 'Lightweight Dependency Injection Framework for your Flutter project'
-version: 0.0.3
+version: 0.1.0
 repository: https://github.com/WebMad/sputnik_di/tree/main/packages/flutter_sputnik_di
 
 topics:
@@ -22,7 +22,7 @@ dependencies:
     sdk: flutter
 
   nested: ^1.0.0
-  sputnik_di: ^0.0.3
+  sputnik_di: ^0.1.0
 
 dev_dependencies:
   lints: ^3.0.0

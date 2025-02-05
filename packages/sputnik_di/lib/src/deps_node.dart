@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:sputnik_di/sputnik_di.dart';
+import 'package:sputnik_di/src/dependency.dart';
 
 /// A function type representing a dependency that implements [Lifecycle].
-typedef LifecycleDependency = Lifecycle Function();
+typedef LifecycleDependency = Dependency<Lifecycle>;
 
 /// Represents the possible statuses of a [DepsNode].
 enum DepsNodeStatus {
@@ -29,18 +30,32 @@ enum DepsNodeStatus {
 /// of dependencies in a controlled manner.
 abstract class DepsNode implements Lifecycle {
   /// The queue of dependency sets that need to be initialized.
+  ///
+  /// Dependencies are initialized in batches, with each set being processed sequentially.
   @protected
   List<Set<LifecycleDependency>> initializeQueue = [];
+
+  /// A set of dependencies that can be cleared when needed.
+  Set<ClearableDependency> _clearableDependencies = {};
 
   /// A broadcast stream controller to manage status updates.
   final StreamController<DepsNodeStatus> _statusController =
       StreamController<DepsNodeStatus>.broadcast();
 
   /// A flag to indicate whether dependencies are being retrieved.
+  ///
+  /// This ensures that dependencies can only be accessed during initialization
+  /// or when the node is fully initialized.
   bool _getDepsLock = false;
 
   /// The current status of the [DepsNode].
   DepsNodeStatus _status = DepsNodeStatus.idle;
+
+  /// Whether dependencies can currently be retrieved.
+  ///
+  /// This is `true` during initialization and `false` otherwise.
+  @internal
+  bool get getDepsLock => _getDepsLock;
 
   /// A stream that emits status updates for the [DepsNode].
   Stream<DepsNodeStatus> get statusStream => _statusController.stream;
@@ -49,6 +64,9 @@ abstract class DepsNode implements Lifecycle {
   DepsNodeStatus get status => _status;
 
   /// Updates the status and notifies listeners via the stream.
+  ///
+  /// If the new status is different from the current one, the status is updated
+  /// and the change is broadcasted to listeners.
   void _setStatus(DepsNodeStatus newStatus) {
     if (_status != newStatus) {
       _status = newStatus;
@@ -61,6 +79,8 @@ abstract class DepsNode implements Lifecycle {
   /// This method sets the status to [DepsNodeStatus.initializing],
   /// processes each batch of dependencies sequentially, and then sets
   /// the status to [DepsNodeStatus.initialized].
+  ///
+  /// Each batch of dependencies is initialized concurrently using [Future.wait].
   @override
   @mustCallSuper
   Future<void> init() async {
@@ -84,6 +104,8 @@ abstract class DepsNode implements Lifecycle {
   /// This method sets the status to [DepsNodeStatus.disposing],
   /// processes each batch of dependencies in reverse order, and then sets
   /// the status to [DepsNodeStatus.disposed].
+  ///
+  /// Each batch of dependencies is disposed of concurrently using [Future.wait].
   @override
   @mustCallSuper
   Future<void> dispose() async {
@@ -107,25 +129,47 @@ abstract class DepsNode implements Lifecycle {
   ///
   /// Ensures that dependencies are only accessed when the [DepsNode] is fully initialized
   /// or during initialization.
+  ///
+  /// The created dependency is stored in [_clearableDependencies] to allow resetting if needed.
   @protected
-  R Function() bind<R>(R Function() creator) {
-    bool isCreated = false;
-    late final R dep;
+  Dependency<R> bind<R>(R Function() creator) {
+    final dependency = Dependency(this, creator);
+    _clearableDependencies.add(dependency);
 
-    return () {
-      assert(
-        _status == DepsNodeStatus.initialized || _getDepsLock,
-        'Incorrect DepsNode status while retrieving dependency.\n'
-        'A dependency can only be retrieved when the status '
-        'is "initialized" or during the initialization of the initializeQueue.',
-      );
+    return dependency;
+  }
 
-      if (isCreated) {
-        return dep;
-      }
+  /// Binds a singleton factory dependency that creates instances based on a parameter.
+  ///
+  /// Each unique parameter value will be associated with a different singleton instance.
+  ///
+  /// The created dependency is stored in [_clearableDependencies] to allow resetting if needed.
+  @protected
+  SingletonFactoryDependency<R, Param> bindSingletonFactory<R, Param>(
+    R Function(Param param) creator,
+  ) {
+    final dependency = SingletonFactoryDependency(
+      this,
+      creator,
+    );
 
-      isCreated = true;
-      return dep = creator();
-    };
+    _clearableDependencies.add(dependency);
+
+    return dependency;
+  }
+
+  /// Clears all stored dependencies and resets the node's status to [DepsNodeStatus.idle].
+  ///
+  /// This ensures that all dependencies can be reinitialized if needed.
+  void clear() {
+    final depsToClear = [..._clearableDependencies];
+
+    _clearableDependencies.clear();
+
+    for (final depToClear in depsToClear) {
+      depToClear.clear();
+    }
+
+    _setStatus(DepsNodeStatus.idle);
   }
 }

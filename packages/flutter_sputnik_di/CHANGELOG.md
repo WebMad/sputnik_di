@@ -1,3 +1,7 @@
+## 0.1.0
+
+- Added the `bindOnInitialized` field to `DepsNodeBuilder` for binding `DepsNode` to the widget tree
+
 ## 0.0.3
 
 - fixing pub scores

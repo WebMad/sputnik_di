@@ -10,6 +10,14 @@ class DepsNodeBuilder<T extends DepsNode> extends StatelessWidget {
   /// The [DepsNode] instance whose status will be monitored and used to determine which widget to display.
   final T depsNode;
 
+  /// Determines whether the [depsNode] should be bound when it is initialized.
+  ///
+  /// If set to `true`, the [DepsNode] will automatically be wrapped with [DepsNodeBinder.value]
+  /// when it reaches the initialized state. This ensures that the node is available
+  /// for dependency injection within the widget subtree. If `false`, the binding
+  /// must be handled manually if needed.
+  final bool bindOnInitialized;
+
   /// A builder function for when the [DepsNode] is idle.
   ///
   /// This function is called when the [DepsNode] is in the idle state.
@@ -82,6 +90,7 @@ class DepsNodeBuilder<T extends DepsNode> extends StatelessWidget {
     this.disposing,
     this.disposed,
     this.idle,
+    this.bindOnInitialized = false,
     required this.initialized,
     required this.orElse,
   });
@@ -105,11 +114,17 @@ class DepsNodeBuilder<T extends DepsNode> extends StatelessWidget {
           case DepsNodeStatus.initializing:
             final res = initializing?.call(context, depsNode);
             if (res != null) {
-              return res;
+              return bindOnInitialized
+                  ? DepsNodeBinder.value(depsNode: depsNode, child: res)
+                  : res;
             }
             break;
           case DepsNodeStatus.initialized:
-            return initialized.call(context, depsNode);
+            final res = initialized.call(context, depsNode);
+
+            return bindOnInitialized
+                ? DepsNodeBinder.value(depsNode: depsNode, child: res)
+                : res;
           case DepsNodeStatus.disposing:
             final res = disposing?.call(context, depsNode);
             if (res != null) {
