@@ -1,3 +1,7 @@
+## 0.2.0
+
+- Added `overrideWith` method for mocking dependencies.
+
 ## 0.1.0
 
 - Clearing created dependencies from DepsNode

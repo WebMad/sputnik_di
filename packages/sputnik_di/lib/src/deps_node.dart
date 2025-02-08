@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:meta/meta.dart';
-import 'package:sputnik_di/sputnik_di.dart';
-import 'package:sputnik_di/src/dependency.dart';
+
+import 'dependency.dart';
+import 'lifecycle/lifecycle.dart';
 
 /// A function type representing a dependency that implements [Lifecycle].
 typedef LifecycleDependency = Dependency<Lifecycle>;
@@ -36,7 +37,7 @@ abstract class DepsNode implements Lifecycle {
   List<Set<LifecycleDependency>> initializeQueue = [];
 
   /// A set of dependencies that can be cleared when needed.
-  Set<ClearableDependency> _clearableDependencies = {};
+  final Set<ClearableDependency> _clearableDependencies = {};
 
   /// A broadcast stream controller to manage status updates.
   final StreamController<DepsNodeStatus> _statusController =
@@ -132,7 +133,7 @@ abstract class DepsNode implements Lifecycle {
   ///
   /// The created dependency is stored in [_clearableDependencies] to allow resetting if needed.
   @protected
-  Dependency<R> bind<R>(R Function() creator) {
+  Dependency<R> bind<R>(DependencyCreator<R> creator) {
     final dependency = Dependency(this, creator);
     _clearableDependencies.add(dependency);
 
@@ -146,7 +147,7 @@ abstract class DepsNode implements Lifecycle {
   /// The created dependency is stored in [_clearableDependencies] to allow resetting if needed.
   @protected
   SingletonFactoryDependency<R, Param> bindSingletonFactory<R, Param>(
-    R Function(Param param) creator,
+    SingletonFactoryCreator<R, Param> creator,
   ) {
     final dependency = SingletonFactoryDependency(
       this,

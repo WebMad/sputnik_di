@@ -183,6 +183,30 @@ class FeatureWidget extends StatelessWidget {
 }
 ```
 
+## Mocking dependencies with `overrideWith`
+
+When writing tests or modifying dependencies dynamically, you can use the `overrideWith` method to
+replace an existing dependency with a mock implementation. This is useful for injecting test
+doubles, such as mocks or stubs, without modifying the original dependency registration.
+
+Example:
+
+```dart
+void main() {
+  final depsNode = FeatureDepsNode();
+
+  // Override dependency with a mock
+  depsNode.featureManager.overrideWith(() => MockFeatureManager());
+
+  final featureManager = depsNode.featureManager();
+
+  // Use featureManager in tests
+}
+```
+
+**Note:** Overrides must be performed before initializing the `DepsNode`, ensuring the new
+dependency is used correctly.
+
 ## Additional information
 
 The package includes a `Lifecycle` class, which is structured as follows:

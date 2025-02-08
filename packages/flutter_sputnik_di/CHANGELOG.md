@@ -1,3 +1,7 @@
+## 0.2.0
+
+- bump version of sputnik_di
+
 ## 0.1.0
 
 - Added the `bindOnInitialized` field to `DepsNodeBuilder` for binding `DepsNode` to the widget tree
