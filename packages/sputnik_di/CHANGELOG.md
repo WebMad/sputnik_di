@@ -1,3 +1,7 @@
+## 0.2.1
+
+- Fix statusController on clear in DepsNode
+
 ## 0.2.0
 
 - Added `overrideWith` method for mocking dependencies.

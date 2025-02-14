@@ -40,8 +40,7 @@ abstract class DepsNode implements Lifecycle {
   final Set<ClearableDependency> _clearableDependencies = {};
 
   /// A broadcast stream controller to manage status updates.
-  final StreamController<DepsNodeStatus> _statusController =
-      StreamController<DepsNodeStatus>.broadcast();
+  StreamController<DepsNodeStatus>? _internalStatusController;
 
   /// A flag to indicate whether dependencies are being retrieved.
   ///
@@ -57,6 +56,11 @@ abstract class DepsNode implements Lifecycle {
   /// This is `true` during initialization and `false` otherwise.
   @internal
   bool get getDepsLock => _getDepsLock;
+
+  /// Ensures getting the current StatusController
+  StreamController<DepsNodeStatus> get _statusController =>
+      _internalStatusController ??=
+          StreamController<DepsNodeStatus>.broadcast();
 
   /// A stream that emits status updates for the [DepsNode].
   Stream<DepsNodeStatus> get statusStream => _statusController.stream;
@@ -171,6 +175,7 @@ abstract class DepsNode implements Lifecycle {
       depToClear.clear();
     }
 
+    _internalStatusController = null;
     _setStatus(DepsNodeStatus.idle);
   }
 }
