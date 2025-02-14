@@ -1,3 +1,7 @@
+## 0.2.1
+
+- fix export state_holder_builder
+
 ## 0.2.0
 
 - bump version of sputnik_di
