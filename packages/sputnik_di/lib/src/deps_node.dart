@@ -169,8 +169,6 @@ abstract class DepsNode implements Lifecycle {
   void clear() {
     final depsToClear = [..._clearableDependencies];
 
-    _clearableDependencies.clear();
-
     for (final depToClear in depsToClear) {
       depToClear.clear();
     }
