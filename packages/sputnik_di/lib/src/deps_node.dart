@@ -60,7 +60,7 @@ abstract class DepsNode implements Lifecycle {
   /// Ensures getting the current StatusController
   StreamController<DepsNodeStatus> get _statusController =>
       _internalStatusController ??=
-          StreamController<DepsNodeStatus>.broadcast();
+      StreamController<DepsNodeStatus>.broadcast();
 
   /// A stream that emits status updates for the [DepsNode].
   Stream<DepsNodeStatus> get statusStream => _statusController.stream;
@@ -97,9 +97,11 @@ abstract class DepsNode implements Lifecycle {
       for (final obj in initializeBatch) {
         futures.add(obj().init());
       }
-      _getDepsLock = false;
+
 
       await Future.wait(futures);
+
+      _getDepsLock = false;
     }
     _setStatus(DepsNodeStatus.initialized);
   }
@@ -151,8 +153,7 @@ abstract class DepsNode implements Lifecycle {
   /// The created dependency is stored in [_clearableDependencies] to allow resetting if needed.
   @protected
   SingletonFactoryDependency<R, Param> bindSingletonFactory<R, Param>(
-    SingletonFactoryCreator<R, Param> creator,
-  ) {
+      SingletonFactoryCreator<R, Param> creator,) {
     final dependency = SingletonFactoryDependency(
       this,
       creator,
