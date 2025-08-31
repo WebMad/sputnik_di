@@ -1,3 +1,7 @@
+## 0.2.3
+
+- Fix lock
+
 ## 0.2.2
 
 - Fix reinitialize dependencies
